@@ -1,13 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Send, User, Bot } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
+
 export default function Home() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [sessionId, setSessionId] = useState("");
+  useEffect(() => {
+    setSessionId(crypto.randomUUID());
+  }, []);
   const [messages, setMessages] = useState<
     { id: string; role: "user" | "assistant"; content: string }[]
   >([
@@ -39,7 +44,7 @@ export default function Home() {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: updatedMessages }),
+        body: JSON.stringify({ messages: updatedMessages, sessionId }),
       });
 
       if (!response.ok || !response.body) {

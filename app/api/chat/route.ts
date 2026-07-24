@@ -1,5 +1,6 @@
 import { createOpenAI } from "@ai-sdk/openai";
-import { streamText } from "ai";
+import { streamText, generateText } from "ai";
+import { supabaseAdmin } from "@/lib/supabase";
 
 const openrouter = createOpenAI({
   baseURL: "https://openrouter.ai/api/v1",
@@ -10,21 +11,125 @@ const openrouter = createOpenAI({
   },
 });
 
+// Helper function to extract structured fields from user message
+async function extractProfilingDetails(userText: string) {
+  try {
+    const { text } = await generateText({
+      model: openrouter.chat("openai/gpt-4o-mini"),
+      prompt: `Extract structured lead details from this user text: "${userText}".
+Return ONLY a valid raw JSON object with these exact keys (use null if not mentioned):
+{
+  "user_role": string or null,
+  "district_type": string or null (Urban, Suburban, or Rural),
+  "district_size": string or null,
+  "budget_range": string or null
+}
+Do not include markdown code block formatting like \`\`\`json.`,
+    });
+
+    return JSON.parse(text.trim());
+  } catch (err) {
+    console.error("Extraction error:", err);
+    return { user_role: null, district_type: null, district_size: null, budget_range: null };
+  }
+}
+
 export async function POST(req: Request) {
-  const { messages } = await req.json();
+  const { messages, sessionId } = await req.json();
+
+  const userMessages = messages.filter((m: any) => m.role === "user");
+  const lastUserMsg = userMessages[userMessages.length - 1]?.content || "";
+  const userTurn = userMessages.length;
+
+  let currentStage = "STAGE_2";
+  let stagePrompt = "";
+
+  if (userTurn === 1) {
+    // Stage 2: Topic matching & profiling prompt
+    currentStage = "STAGE_2";
+    stagePrompt = `You are Leaping Lizzy representing LEAP Innovations. 
+The user was asked what "LEAP" they want to take and has shared their main challenge/topic: "${lastUserMsg}".
+
+Instructions:
+1. Respond with: "Based on your focus on ${lastUserMsg}, LEAP has successfully partnered with districts in similar contexts. For example, in our past work using our Holistic Diagnostic (including Student Empathy Interviews and the Leadership Lens), we identified key growth areas and moved districts from small-scale pilots to district-wide acceleration."
+2. In the EXACT SAME response, ask the user:
+   - What is their role?
+   - What is their district/school setting (Rural, Suburban, or Urban)?
+   - What is the size of their school or district?
+   - What budget range are they considering for this work?`;
+
+    if (sessionId) {
+      await supabaseAdmin.from("conversation_leads").upsert(
+        {
+          session_id: sessionId,
+          current_stage: currentStage,
+          primary_topic: lastUserMsg,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "session_id" }
+      );
+    }
+  } else if (userTurn === 2) {
+    // Stage 3: Parse profile details & generate proposal
+    currentStage = "STAGE_3";
+    stagePrompt = `You are Leaping Lizzy representing LEAP Innovations.
+The user has provided their context details (role, setting, size, budget).
+
+Instructions:
+1. Briefly acknowledge their response with empathy.
+2. Generate a proposal formatted with the tagline "Assess. Accelerate. Amplify". 
+   Start with: "Here is a sample engagement pathway aligned with the LEAP Learning Framework:"
+   - **ASSESS:** We begin with a 2-week diagnostic (Surveys + Empathy Interviews) to baseline your current student-centered ecosystem.
+   - **ACCELERATE:** We transition to a custom engagement focusing on your specific goals through professional learning and infrastructure building.
+   - **AMPLIFY:** We conclude with a Leadership Synthesis session to ensure adult systems are built to sustain impact long-term.
+3. Conclude by asking if they would like to connect with someone at LEAP about their offerings.`;
+
+    if (sessionId) {
+      // 🌟 Extract structured details before saving to Supabase
+      const extracted = await extractProfilingDetails(lastUserMsg);
+
+      await supabaseAdmin.from("conversation_leads").upsert(
+        {
+          session_id: sessionId,
+          current_stage: currentStage,
+          user_role: extracted.user_role,
+          district_type: extracted.district_type,
+          district_size: extracted.district_size,
+          budget_range: extracted.budget_range,
+          additional_notes: lastUserMsg,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "session_id" }
+      );
+    }
+  } else {
+    // Stage 4: Outreach & Draft Email Template
+    currentStage = "STAGE_4";
+    stagePrompt = `You are Leaping Lizzy representing LEAP Innovations.
+The user is ready for next steps or connection details.
+
+Instructions:
+1. Provide contact details: You can connect with Dr. Carlos Beato, Chief Transformation Officer at LEAP at carlos@leapinnovations.org.
+2. Provide this exact draft email template for them to copy and paste:
+
+"Hi Carlos, I engaged with Leaping Lizzy and am interested in knowing more about your offerings. I am particularly interested in knowing more about your work. Please let me know your availability."`;
+
+    if (sessionId) {
+      // 🌟 Clean update with valid existing columns
+      await supabaseAdmin.from("conversation_leads").upsert(
+        {
+          session_id: sessionId,
+          current_stage: currentStage,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "session_id" }
+      );
+    }
+  }
 
   const result = streamText({
-    // .chat() forces OpenRouter to use /v1/chat/completions instead of /v1/responses
     model: openrouter.chat("openai/gpt-4o-mini"),
-    system: `You are the LEAP Navigator, an expert consultant specializing in LEAP Innovations suite of offerings. Your goal is to guide school, district, and community leaders from "pilot curiosity" to "systemic acceleration.". 
-    Your role is to help anyone looking for services around personalized student-centered learning with LEAP to understand how LEAP might support them. 
-    You are talking to school and district leaders and community partners.
-    Success looks like someone leaving with specific pathways for engaging with LEAP.
-
-Core Guardrails:
-1. Maintain a professional, supportive, and consultative tone suited for school district leaders.
-2. Emphasize LEAP Innovations' core diagnostic approaches (Holistic Diagnostic, Student Empathy Interviews, Leadership Lens).
-3. Be concise and conversational.`,
+    system: stagePrompt,
     messages,
   });
 
