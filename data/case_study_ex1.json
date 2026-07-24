@@ -1,0 +1,20 @@
+{
+  "id": "cs_01",
+  "title": "Urban Middle School Math Acceleration",
+  "case_study_name": "Chicago Public Schools District Pilot",
+  "district_type": "Urban",
+  "focus_area": "Personalized Math Instruction & Middle School Growth",
+  "timeframe": "September 2024 – June 2026",
+  "completion_date": "June 2026",
+  "scale_and_scope": "12 urban middle schools (~8,500 students)",
+  "target_grades": "Grades 6–8",
+  "engagement_tier": "Tier 3 Systemic Acceleration",
+  "diagnostic_used": "Holistic Diagnostic (Student Empathy Interviews & Leadership Lens)",
+  "action_taken": "Co-designed adaptive math learning pathways, trained peer coaches, and shifted 12 urban middle schools from isolated pilot classrooms to district-wide mastery pacing.",
+  "impact_metric": "28% increase in middle school math proficiency and a 40% reduction in algebra retake rates over 18 months.",
+  "key_stakeholders": [
+    "District Math Supervisors",
+    "School Principals",
+    "85 Instructional Math Coaches"
+  ]
+}

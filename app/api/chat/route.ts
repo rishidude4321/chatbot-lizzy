@@ -1,6 +1,7 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { streamText, generateText } from "ai";
 import { supabaseAdmin } from "@/lib/supabase";
+import { getMatchingCaseStudy } from "@/lib/rag";
 
 const openrouter = createOpenAI({
   baseURL: "https://openrouter.ai/api/v1",
@@ -45,13 +46,22 @@ export async function POST(req: Request) {
   let stagePrompt = "";
 
   if (userTurn === 1) {
-    // Stage 2: Topic matching & profiling prompt
+    // 🌟 1. Dynamic RAG Search from case study JSON files
+    const matchedCase = getMatchingCaseStudy(lastUserMsg);
+
     currentStage = "STAGE_2";
     stagePrompt = `You are Leaping Lizzy representing LEAP Innovations. 
 The user was asked what "LEAP" they want to take and has shared their main challenge/topic: "${lastUserMsg}".
 
+Use these EXACT evidence metrics from our matching LEAP knowledge base:
+- Case Study Name: ${matchedCase.case_study_name}
+- Context Setting: ${matchedCase.district_type}
+- Diagnostic Tool Used: ${matchedCase.diagnostic_used}
+- Specific Action Taken: ${matchedCase.action_taken}
+- Verified Impact Metric: ${matchedCase.impact_metric}
+
 Instructions:
-1. Respond with: "Based on your focus on ${lastUserMsg}, LEAP has successfully partnered with districts in similar contexts. For example, in our past work using our Holistic Diagnostic (including Student Empathy Interviews and the Leadership Lens), we identified key growth areas and moved districts from small-scale pilots to district-wide acceleration."
+1. Respond with: "Based on your focus on ${lastUserMsg}, LEAP has successfully partnered with districts in similar contexts. For example, in our work with ${matchedCase.case_study_name}, we used our ${matchedCase.diagnostic_used} to identify key growth areas. We moved them from a small-scale pilot to a district-wide acceleration by ${matchedCase.action_taken}, resulting in ${matchedCase.impact_metric}."
 2. In the EXACT SAME response, ask the user:
    - What is their role?
    - What is their district/school setting (Rural, Suburban, or Urban)?
@@ -64,6 +74,7 @@ Instructions:
           session_id: sessionId,
           current_stage: currentStage,
           primary_topic: lastUserMsg,
+          matched_case_study: matchedCase.case_study_name,
           updated_at: new Date().toISOString(),
         },
         { onConflict: "session_id" }
@@ -85,7 +96,6 @@ Instructions:
 3. Conclude by asking if they would like to connect with someone at LEAP about their offerings.`;
 
     if (sessionId) {
-      // 🌟 Extract structured details before saving to Supabase
       const extracted = await extractProfilingDetails(lastUserMsg);
 
       await supabaseAdmin.from("conversation_leads").upsert(
@@ -115,7 +125,6 @@ Instructions:
 "Hi Carlos, I engaged with Leaping Lizzy and am interested in knowing more about your offerings. I am particularly interested in knowing more about your work. Please let me know your availability."`;
 
     if (sessionId) {
-      // 🌟 Clean update with valid existing columns
       await supabaseAdmin.from("conversation_leads").upsert(
         {
           session_id: sessionId,
