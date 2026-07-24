@@ -3,6 +3,15 @@ import { NextResponse } from "next/server";
 import { renderToBuffer, Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import { supabaseAdmin } from "@/lib/supabase";
 
+function formatTitleCase(str: string | null | undefined): string {
+  if (!str) return "";
+  return str
+    .toLowerCase()
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
 // 1. React PDF Stylesheet
 const styles = StyleSheet.create({
   page: {
@@ -35,6 +44,11 @@ const styles = StyleSheet.create({
   },
   metaBox: {
     flex: 1,
+    paddingRight: 6,
+  },
+  metaBoxTopic: {
+    flex: 2, // Gives Focus Topic 2x more width than other boxes
+    paddingRight: 6,
   },
   metaLabel: {
     fontSize: 8.5,
@@ -185,21 +199,27 @@ const ProposalDocument = ({ lead }: { lead: Record<string, any> }) => (
       <View style={styles.metaContainer}>
         <View style={styles.metaBox}>
           <Text style={styles.metaLabel}>ROLE</Text>
-          <Text style={styles.metaValue}>{lead?.user_role || "District Leader"}</Text>
+          <Text style={styles.metaValue}>
+            {formatTitleCase(lead?.user_role) || "District Leader"}
+          </Text>
         </View>
         <View style={styles.metaBox}>
           <Text style={styles.metaLabel}>SETTING / SIZE</Text>
           <Text style={styles.metaValue}>
-            {lead?.district_type || "Urban"} ({lead?.district_size || "1,000+"})
+            {formatTitleCase(lead?.district_type) || "Urban"} ({lead?.district_size || "1,000+"})
+          </Text>
+        </View>
+        <View style={styles.metaBoxTopic}>
+          <Text style={styles.metaLabel}>FOCUS TOPIC</Text>
+          <Text style={styles.metaValue}>
+            {formatTitleCase(lead?.primary_topic) || "Student-Centered Learning"}
           </Text>
         </View>
         <View style={styles.metaBox}>
-          <Text style={styles.metaLabel}>FOCUS TOPIC</Text>
-          <Text style={styles.metaValue}>{lead?.primary_topic || "Student-Centered Learning"}</Text>
-        </View>
-        <View style={styles.metaBox}>
           <Text style={styles.metaLabel}>BUDGET RANGE</Text>
-          <Text style={styles.metaValue}>{lead?.budget_range || "Custom"}</Text>
+          <Text style={styles.metaValue}>
+            {lead?.budget_range || "Custom"}
+          </Text>
         </View>
       </View>
 
