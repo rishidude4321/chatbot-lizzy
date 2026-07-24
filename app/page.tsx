@@ -142,7 +142,22 @@ export default function Home() {
             ) : (
               <div className="prose prose-sm max-w-none text-slate-800 space-y-2">
                 {m.content ? (
-                  <ReactMarkdown>{m.content}</ReactMarkdown>
+                  <ReactMarkdown
+                    components={{
+                      a: ({ href, children }) => (
+                        <a
+                          href={href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 my-2 px-4 py-2 bg-[#00A3E0] hover:bg-[#008fca] text-white font-semibold rounded-lg shadow-xs transition-all no-underline text-sm"
+                        >
+                          {children}
+                        </a>
+                      ),
+                    }}
+                  >
+                    {m.content}
+                  </ReactMarkdown>
                 ) : (
                   isLoading && <span className="text-slate-400 italic">Thinking...</span>
                 )}

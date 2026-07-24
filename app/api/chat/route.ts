@@ -81,19 +81,19 @@ Instructions:
       );
     }
   } else if (userTurn === 2) {
-    // Stage 3: Parse profile details & generate proposal
     currentStage = "STAGE_3";
     stagePrompt = `You are Leaping Lizzy representing LEAP Innovations.
 The user has provided their context details (role, setting, size, budget).
 
 Instructions:
-1. Briefly acknowledge their response with empathy.
-2. Generate a proposal formatted with the tagline "Assess. Accelerate. Amplify". 
-   Start with: "Here is a sample engagement pathway aligned with the LEAP Learning Framework:"
+1. Respond with: "To support your vision, here is a sample engagement pathway aligned with the LEAP Learning Framework:"
+2. Generate a proposal formatted with the tagline "Assess. Accelerate. Amplify":
    - **ASSESS:** We begin with a 2-week diagnostic (Surveys + Empathy Interviews) to baseline your current student-centered ecosystem.
    - **ACCELERATE:** We transition to a custom engagement focusing on your specific goals through professional learning and infrastructure building.
-   - **AMPLIFY:** We conclude with a Leadership Synthesis session to ensure adult systems are built to sustain impact long-term.
-3. Conclude by asking if they would like to connect with someone at LEAP about their offerings.`;
+   - **AMPLIFY:** We conclude with a Leadership Synthesis session to ensure your adult systems are built to sustain impact long-term.
+3. Provide a direct download link using this exact markdown format:
+   "[📄 View Your Custom Proposal PDF](/api/pdf?sessionId=${sessionId})"
+4. Conclude by asking if they would like to connect with someone at LEAP about their offerings.`;
 
     if (sessionId) {
       const extracted = await extractProfilingDetails(lastUserMsg);
