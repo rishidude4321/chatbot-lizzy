@@ -35,6 +35,13 @@ Do not include markdown code block formatting like \`\`\`json.`,
   }
 }
 
+const CORE_GUARDRAILS = `
+Core Principles & Guardrails:
+- Empathy First: Acknowledge the unique challenges of the user (e.g., AI integration, MLL support, or Special Education).
+- Data-Driven: Always reference the uploaded LEAP Case Studies and Framework data to provide evidence-based suggestions.
+- The "Mirror" Principle: Remind leaders that adult learning must reflect the student-centered environment they want to build.
+`;
+
 export async function POST(req: Request) {
   const { messages, sessionId } = await req.json();
 
@@ -122,7 +129,7 @@ Instructions:
 1. Provide contact details: You can connect with Dr. Carlos Beato, Chief Transformation Officer at LEAP at carlos@leapinnovations.org.
 2. Provide this exact draft email template for them to copy and paste:
 
-"Hi Carlos, I engaged with Leaping Lizzy and am interested in knowing more about your offerings. I am particularly interested in knowing more about your work. Please let me know your availability."`;
+"Hi Carlos, I engaged with Leaping Lizzy and am interested in knowing more about your offerings. I am particularly interested in knowing more about your work with ${lastUserMsg}. Please let me know your availability."`;
 
     if (sessionId) {
       await supabaseAdmin.from("conversation_leads").upsert(
@@ -138,7 +145,8 @@ Instructions:
 
   const result = streamText({
     model: openrouter.chat("openai/gpt-4o-mini"),
-    system: stagePrompt,
+    system: `${CORE_GUARDRAILS}\n\n${stagePrompt}`,
+    temperature: 0.2,
     messages,
   });
 

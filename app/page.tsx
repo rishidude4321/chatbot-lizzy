@@ -103,10 +103,14 @@ export default function Home() {
             Leaping Lizzy
           </span>
         </div>
-        <div className="flex items-center space-x-2 text-xs bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-full text-slate-600 font-medium">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span>Active Session</span>
-        </div>
+        <a
+          href="https://www.leapinnovations.org"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs bg-black hover:bg-slate-800 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-150 inline-flex items-center"
+        >
+          Learn more about LEAP
+        </a>
       </header>
 
       {/* 2. Main Chat Feed */}
