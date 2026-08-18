@@ -1,0 +1,42 @@
+{
+  "statistics": [
+    {
+      "quote": "97% of respondents believe their ability to lead change has grown, and 100% report feeling more confident making decisions about instructional practices and innovation.",
+      "pillars": [
+        "Capacity Building", 
+        "Human-Centered AI"
+      ]
+    },
+    {
+      "quote": "100% of respondents believe that teaching and learning practices have been positively influenced by their partnership with LEAP, helping their district make progress toward its goals.",
+      "pillars": [
+        "Human-Centered AI", 
+        "Personalized Learning", 
+        "Engagement & Belonging", 
+        "General"
+      ]
+    }
+  ],
+  "quotes": [
+    {
+      "quote": "LEAP provided structure and facilitation that helped teams reflect on where they were on their AI journey... and leave with practical next steps they could actually use.",
+      "pillars": ["Human-Centered AI"]
+    },
+    {
+      "quote": "LEAP is highly responsive, with professional development and consulting that is tailored rather than a one-size-fits-all approach.",
+      "pillars": ["Personalized Learning"]
+    },
+    {
+      "quote": "Our meetings caused me to stop being busy and focus on the immediate work of improving instruction through a shared lens for the district.",
+      "pillars": ["Capacity Building"]
+    },
+    {
+      "quote": "The most valuable aspect of LEAP’s support was consistency. Being consistent produces results.",
+      "pillars": ["Engagement & Belonging"]
+    },
+    {
+      "quote": "One way our district is different because of this engagement is that the student voice now plays a more meaningful role in shaping our instructional technology.",
+      "pillars": ["General"]
+    }
+  ]
+}

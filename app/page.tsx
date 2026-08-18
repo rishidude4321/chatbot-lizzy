@@ -20,7 +20,7 @@ export default function Home() {
       id: "welcome",
       role: "assistant",
       content:
-        "Welcome to LEAP Innovations. We believe every district is on a journey toward a more learner-centered future. To help us map the best path forward, what 'LEAP' can we help you take? What specific challenges or goals do you have regarding personalized and student-centered learning?",
+        "Welcome to LEAP Innovations. We believe every district is on a journey toward a more learner-centered future. To help us map the best path forward, what 'LEAP' can we help you take? What specific challenges or goals are you working on?\n\nTo help us map the best path forward, which of our core areas best aligns with your needs: Engagement & Belonging, Personalized Learning, Human-Centered AI, or Capacity Building?",
     },
   ]);
 
