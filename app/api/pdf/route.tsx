@@ -1,8 +1,24 @@
 import React from "react";
 import { NextResponse } from "next/server";
-import { renderToBuffer, Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import {
+  renderToBuffer,
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  Image,
+  Font,
+} from "@react-pdf/renderer";
 import { supabaseAdmin } from "@/lib/supabase";
+import { getServicesForPDF, getProofPoints } from "@/lib/rag";
+import path from "path";
+import fs from "fs";
+import sharp from "sharp";
 
+// ----------------------------------------------------------------------
+// Helper: Title Case
+// ----------------------------------------------------------------------
 function formatTitleCase(str: string | null | undefined): string {
   if (!str) return "";
   return str
@@ -12,112 +28,89 @@ function formatTitleCase(str: string | null | undefined): string {
     .join(" ");
 }
 
-// 1. React PDF Stylesheet
+// ----------------------------------------------------------------------
+// React PDF Styles
+// ----------------------------------------------------------------------
+
 const styles = StyleSheet.create({
   page: {
     padding: 30,
+    paddingTop: 10,
     fontFamily: "Helvetica",
     backgroundColor: "#FFFFFF",
   },
-  headerBanner: {
-    backgroundColor: "#0F1D32",
-    padding: 12,
-    borderRadius: 4,
+  // HEADER
+  logoContainer: {
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  logo: {
+    width: 240,
+    height: "auto",
+  },
+  preparedForContainer: {
+    alignItems: "center",
     marginBottom: 12,
   },
-  headerTitle: {
-    fontSize: 18,
-    color: "#FFFFFF",
-    fontWeight: "bold",
-  },
-  headerSubtitle: {
-    fontSize: 10.5,
-    color: "#00A3E0",
-    marginTop: 3,
-  },
-  metaContainer: {
-    flexDirection: "row",
-    backgroundColor: "#F8FAFC",
-    padding: 8,
-    borderRadius: 4,
-    marginBottom: 12,
-  },
-  metaBox: {
-    flex: 1,
-    paddingRight: 6,
-  },
-  metaBoxTopic: {
-    flex: 2, // Gives Focus Topic 2x more width than other boxes
-    paddingRight: 6,
-  },
-  metaLabel: {
-    fontSize: 8.5,
-    color: "#64748B",
-    fontWeight: "bold",
-  },
-  metaValue: {
-    fontSize: 10.5,
-    color: "#0F1D32",
-    marginTop: 2,
-  },
-  tagline: {
-    textAlign: "center",
-    backgroundColor: "#0F1D32",
-    color: "#00A3E0",
-    padding: 6,
-    fontSize: 12.5,
-    fontWeight: "bold",
-    borderRadius: 4,
-    marginBottom: 12,
-  },
-  cardAssess: {
-    borderLeftWidth: 4,
-    borderLeftColor: "#00A3E0",
-    backgroundColor: "#F8FAFC",
-    padding: 8,
-    marginBottom: 8,
-    borderRadius: 2,
-  },
-  cardAccelerate: {
-    borderLeftWidth: 4,
-    borderLeftColor: "#059669",
-    backgroundColor: "#F8FAFC",
-    padding: 8,
-    marginBottom: 8,
-    borderRadius: 2,
-  },
-  cardAmplify: {
-    borderLeftWidth: 4,
-    borderLeftColor: "#0F1D32",
-    backgroundColor: "#F8FAFC",
-    padding: 8,
-    marginBottom: 8,
-    borderRadius: 2,
-  },
-  cardTitle: {
-    fontSize: 11.5,
-    fontWeight: "bold",
-    color: "#0F1D32",
-    marginBottom: 3,
-  },
-  cardBody: {
+  preparedForText: {
     fontSize: 10,
-    color: "#334155",
-    lineHeight: 1.3,
+    fontWeight: "normal",
+    color: "#000000",
   },
+  pipe: {
+    color: "#00A3E0",
+  },
+  // SECTION TITLES – now in blue
   sectionTitle: {
-    fontSize: 12.5,
+    fontSize: 14,
     fontWeight: "bold",
-    color: "#0F1D32",
-    marginTop: 8,
+    color: "#00A3E0",
+    marginTop: 12,
     marginBottom: 6,
   },
+  bodyText: {
+    fontSize: 10,
+    color: "#334155",
+    lineHeight: 1.4,
+    marginBottom: 4,
+  },
+  bulletList: {
+    marginLeft: 12,
+    marginBottom: 4,
+  },
+  bulletItem: {
+    fontSize: 10,
+    color: "#334155",
+    lineHeight: 1.4,
+    marginBottom: 2,
+  },
+  bulletDot: {
+    fontSize: 10,
+    color: "#00A3E0",
+    marginRight: 4,
+  },
+  // MAP container
+  mapContainer: {
+    flexDirection: "row",
+    marginTop: 8,
+    marginBottom: 8,
+    alignItems: "center", // vertically center if you want
+  },
+  mapImage: {
+    width: 200,
+    height: "auto",
+    marginLeft: 10,
+  },
+  mapTextContainer: {
+    flex: 1,
+  },
+  // TABLE
   table: {
     width: "100%",
     borderWidth: 1,
     borderColor: "#E2E8F0",
     borderRadius: 4,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   tableHeaderRow: {
     flexDirection: "row",
@@ -138,24 +131,14 @@ const styles = StyleSheet.create({
     padding: 6,
     backgroundColor: "#F8FAFC",
   },
-  colPhase: {
-    width: "22%",
+  colActivity: {
+    width: "30%",
     fontSize: 9.5,
     fontWeight: "bold",
     color: "#0F1D32",
   },
-  colDeliverable: {
-    width: "42%",
-    fontSize: 9.5,
-    color: "#334155",
-  },
-  colDuration: {
-    width: "18%",
-    fontSize: 9.5,
-    color: "#334155",
-  },
-  colScope: {
-    width: "18%",
+  colDescription: {
+    width: "70%",
     fontSize: 9.5,
     color: "#334155",
   },
@@ -164,140 +147,214 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#FFFFFF",
   },
-  contactBox: {
-    marginTop: 10,
-    padding: 8,
+  // CALLOUT BOX (testimonial) – yellow background
+  calloutBox: {
+    marginTop: 8,
+    padding: 10,
     borderWidth: 1,
-    borderStyle: "dashed",
-    borderColor: "#00A3E0",
+    borderColor: "#FFD700",
     borderRadius: 4,
+    backgroundColor: "#FFF9E6",
   },
-  contactTitle: {
-    fontSize: 10.5,
+  calloutStat: {
+    fontSize: 14,
     fontWeight: "bold",
     color: "#0F1D32",
   },
-  contactText: {
-    fontSize: 9.5,
-    color: "#475569",
+  calloutQuote: {
+    fontSize: 10,
+    color: "#334155",
+    fontStyle: "italic",
     marginTop: 2,
+  },
+  // DISCLAIMER – grey
+  disclaimer: {
+    fontSize: 8,
+    color: "#64748B",
+    fontStyle: "italic",
+    marginTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#E2E8F0",
+    paddingTop: 8,
+  },
+  spacer: {
+    height: 6,
   },
 });
 
-// 2. Document Template Component
-const ProposalDocument = ({ lead }: { lead: Record<string, any> }) => (
-  <Document>
-    <Page size="A4" style={styles.page}>
-      
-      {/* Header */}
-      <View style={styles.headerBanner}>
-        <Text style={styles.headerTitle}>LEAP Innovations — Engagement Proposal</Text>
-        <Text style={styles.headerSubtitle}>Systemic Acceleration Pathway</Text>
-      </View>
-
-      {/* Meta Table */}
-      <View style={styles.metaContainer}>
-        <View style={styles.metaBox}>
-          <Text style={styles.metaLabel}>ROLE</Text>
-          <Text style={styles.metaValue}>
-            {formatTitleCase(lead?.user_role) || "District Leader"}
-          </Text>
-        </View>
-        <View style={styles.metaBox}>
-          <Text style={styles.metaLabel}>SETTING / SIZE</Text>
-          <Text style={styles.metaValue}>
-            {formatTitleCase(lead?.district_type) || "Urban"} ({lead?.district_size || "1,000+"})
-          </Text>
-        </View>
-        <View style={styles.metaBoxTopic}>
-          <Text style={styles.metaLabel}>FOCUS TOPIC</Text>
-          <Text style={styles.metaValue}>
-            {formatTitleCase(lead?.primary_topic) || "Student-Centered Learning"}
-          </Text>
-        </View>
-        <View style={styles.metaBox}>
-          <Text style={styles.metaLabel}>BUDGET RANGE</Text>
-          <Text style={styles.metaValue}>
-            {lead?.budget_range || "Custom"}
-          </Text>
-        </View>
-      </View>
-
-      {/* Tagline */}
-      <View style={styles.tagline}>
-        <Text>ASSESS  •  ACCELERATE  •  AMPLIFY</Text>
-      </View>
-
-      {/* Pillars */}
-      <View style={styles.cardAssess}>
-        <Text style={styles.cardTitle}>ASSESS: Holistic Diagnostic & Baseline</Text>
-        <Text style={styles.cardBody}>
-          We begin with a 2-week diagnostic combining quantitative surveys and qualitative Student Empathy Interviews alongside our proprietary Leadership Lens tool to baseline your student-centered ecosystem.
+// ----------------------------------------------------------------------
+// Header Component (reused on every page)
+// ----------------------------------------------------------------------
+const Header = ({
+  logoBase64,
+  schoolName,
+  monthYear,
+}: {
+  logoBase64: string;
+  schoolName: string;
+  monthYear: string;
+}) => (
+  <View>
+    <View style={styles.logoContainer}>
+      {logoBase64 ? (
+        <Image src={logoBase64} style={styles.logo} />
+      ) : (
+        <Text style={{ fontSize: 14, color: "#0F1D32", fontWeight: "bold" }}>
+          LEAP Innovations
         </Text>
-      </View>
-
-      <View style={styles.cardAccelerate}>
-        <Text style={styles.cardTitle}>ACCELERATE: Targeted Infrastructure & Professional Learning</Text>
-        <Text style={styles.cardBody}>
-          We transition into custom professional learning and infrastructure building tailored specifically to {lead?.primary_topic || "your primary focus areas"} through job-embedded coaching and mastery pacing.
-        </Text>
-      </View>
-
-      <View style={styles.cardAmplify}>
-        <Text style={styles.cardTitle}>AMPLIFY: Leadership Synthesis & Scaling</Text>
-        <Text style={styles.cardBody}>
-          We conclude with a Leadership Synthesis session to ensure adult leadership systems and continuous monitoring frameworks are built to sustain and grow this impact long-term.
-        </Text>
-      </View>
-
-      {/* Proposed Timeline & Structure Table */}
-      <Text style={styles.sectionTitle}>Proposed Timeline & Structure</Text>
-      <View style={styles.table}>
-        {/* Table Header */}
-        <View style={styles.tableHeaderRow}>
-          <Text style={{ ...styles.colPhase, ...styles.headerColText }}>Phase</Text>
-          <Text style={{ ...styles.colDeliverable, ...styles.headerColText }}>Focus Deliverable</Text>
-          <Text style={{ ...styles.colDuration, ...styles.headerColText }}>Duration</Text>
-          <Text style={{ ...styles.colScope, ...styles.headerColText }}>Scope</Text>
-        </View>
-
-        {/* Row 1 */}
-        <View style={styles.tableRow}>
-          <Text style={styles.colPhase}>1. Assess</Text>
-          <Text style={styles.colDeliverable}>Holistic Diagnostic & Empathy Interviews</Text>
-          <Text style={styles.colDuration}>Weeks 1–2</Text>
-          <Text style={styles.colScope}>Full School Baseline</Text>
-        </View>
-
-        {/* Row 2 */}
-        <View style={styles.tableRowAlt}>
-          <Text style={styles.colPhase}>2. Accelerate</Text>
-          <Text style={styles.colDeliverable}>Tier 2 Coaching & Infrastructure Build</Text>
-          <Text style={styles.colDuration}>Weeks 3–10</Text>
-          <Text style={styles.colScope}>Faculty & Classrooms</Text>
-        </View>
-
-        {/* Row 3 */}
-        <View style={styles.tableRow}>
-          <Text style={styles.colPhase}>3. Amplify</Text>
-          <Text style={styles.colDeliverable}>Leadership Synthesis & Scaling Blueprint</Text>
-          <Text style={styles.colDuration}>Weeks 11–12</Text>
-          <Text style={styles.colScope}>Administrative Team</Text>
-        </View>
-      </View>
-
-      {/* Contact Callout */}
-      <View style={styles.contactBox}>
-        <Text style={styles.contactTitle}>Next Steps & Connection</Text>
-        <Text style={styles.contactText}>Dr. Carlos Beato — Chief Transformation Officer</Text>
-        <Text style={styles.contactText}>Email: carlos@leapinnovations.org | www.leapinnovations.org</Text>
-      </View>
-
-    </Page>
-  </Document>
+      )}
+    </View>
+    <View style={styles.preparedForContainer}>
+      <Text style={styles.preparedForText}>
+        Partnership Proposal Development{" "}
+        <Text style={styles.pipe}>|</Text>{" "}
+        Prepared for {schoolName}{" "}
+        <Text style={styles.pipe}>|</Text>{" "}
+        {monthYear}
+      </Text>
+    </View>
+  </View>
 );
 
-// 3. GET API Handler
+// ----------------------------------------------------------------------
+// PDF Document Component
+// ----------------------------------------------------------------------
+const ProposalDocument = ({
+  lead,
+  logoBase64,
+  services,
+  proofPoint,
+  mapBase64,
+}: {
+  lead: Record<string, any>;
+  logoBase64: string;
+  services: Array<{ phase: string; activity: string; deliverables: string }>;
+  proofPoint: { statistic: any; quote: any };
+  mapBase64: string;
+}) => {
+  const schoolName = lead?.school_or_district_name || "Your School/District";
+  const now = new Date();
+  const monthYear = now.toLocaleString("en-US", { month: "long", year: "numeric" });
+
+  // Extract pillar and custom context
+  const pillar = lead?.primary_topic || "General";
+  const customContext = lead?.custom_context || "learner-centered innovation";
+
+  // Generate "Customized Scope" paragraph
+  const scopeParagraph = `This engagement is designed as a capacity-building and co‑design experience for ${schoolName}'s leadership and implementation teams. Across ${now.getFullYear()}, LEAP will:`;
+
+  return (
+    <Document>
+      {/* ============ PAGE 1 ============ */}
+      <Page size="A4" style={styles.page}>
+        <Header logoBase64={logoBase64} schoolName={schoolName} monthYear={monthYear} />
+
+        {/* ABOUT LEAP INNOVATIONS */}
+        <Text style={styles.sectionTitle}>ABOUT LEAP INNOVATIONS</Text>
+        <Text style={styles.bodyText}>
+          LEAP partners with district and school teams to solve high‑stakes teaching and learning challenges—like engagement, instructional coherence, and future‑ready skills. We connect research, innovation, and practice to redesign learning around students—then help individuals and teams implement what they design through high‑touch support. Our signature approach combines human‑centered design, cohort‑based professional learning, implementation coaching, and evidence tools that starts with local priorities and co‑design a structured pathway for each partner. Our work supports districts and schools in delivering personalized Next Gen learning models that are experienced by students and adults in coherent ways. When you engage with LEAP, you are engaged in entry points that help build clarity, confidence, and momentum that lasts beyond any single initiative. Since 2014, LEAP has:
+        </Text>
+
+        {/* Map + Stats side by side */}
+        <View style={styles.mapContainer}>
+          <View style={styles.mapTextContainer}>
+            <View style={styles.bulletList}>
+              <Text style={styles.bulletItem}>• Worked with more than 140 schools across Chicagoland and 450 districts nationwide</Text>
+              <Text style={styles.bulletItem}>• Scaled the LEAP Frameworks and survey tools across 24 states</Text>
+              <Text style={styles.bulletItem}>• Vetted 200+ edtech companies that have applied to pilot with LEAP partner schools</Text>
+              <Text style={styles.bulletItem}>• Reached 100,000 students nationwide</Text>
+            </View>
+          </View>
+          {mapBase64 && (
+            <Image src={mapBase64} style={styles.mapImage} />
+          )}
+        </View>
+
+        <View style={styles.spacer} />
+
+        {/* THE LEAP APPROACH */}
+        <Text style={styles.sectionTitle}>THE LEAP APPROACH</Text>
+        <Text style={styles.bodyText}>Evidence‑based professional learning that:</Text>
+        <View style={styles.bulletList}>
+          <Text style={styles.bulletItem}>• Leverages adult expertise and voice</Text>
+          <Text style={styles.bulletItem}>• Works with your organizational tools, context, culture, structures, priorities, curriculum and standards</Text>
+          <Text style={styles.bulletItem}>• Balances learning and pedagogy with application</Text>
+          <Text style={styles.bulletItem}>• Rooted in research and evidence‑based practices from LEAP Frameworks</Text>
+          <Text style={styles.bulletItem}>• Leverages learning science and design thinking</Text>
+        </View>
+
+        <View style={styles.spacer} />
+
+        {/* GROUNDING PRINCIPLES */}
+        <Text style={styles.sectionTitle}>GROUNDING PRINCIPLES FOR OUR WORK</Text>
+        <Text style={styles.bodyText}>
+          At the heart of our approach is the belief that authentic educational transformation must be a continuous, cyclical journey centered entirely on the learner. We support partners in creating an ecosystem of growth—one that begins with assessing readiness and co‑designing a shared vision, then matures through the empowerment of change agents and the constant refinement of practice. We don't just implement change; we amplify and sustain it to ensure that every strategic shift is purposeful, collaborative, and, above all, driven by the needs of the students you serve. Every partnership looks different, because every community's goals, context, and starting point are different.
+        </Text>
+        <View style={styles.bulletList}>
+          <Text style={styles.bulletItem}>• EVERY LEARNER CAN SUCCEED WITH SUPPORT THAT'S CUSTOMIZED TO THE CHILD'S INTERESTS AND NEEDS: When they are engaged in a more personalized manner, students will often master content well above curriculum standards or developmental guidelines. We can and should reframe how educators set and raise expectations for our students.</Text>
+          <Text style={styles.bulletItem}>• EVERY LEARNER BRINGS STRENGTHS AND TALENTS TO THE CLASSROOM: The diverse knowledge bases, life experiences, languages and cultures of children are powerful assets for their learning‑as well as the learning of those around them‑and need to be leveraged as such.</Text>
+          <Text style={styles.bulletItem}>• LEARNER AGENCY IS ESSENTIAL: Our world of work increasingly requires more leadership, agility and self‑direction. At an early age, we must inspire our students to assume responsibility of their own learning, and help co‑design it.</Text>
+          <Text style={styles.bulletItem}>• A SENSE OF BELONGING IS CRITICAL TO LEARNING: Students are more engaged, motivated, and set for up social, emotional, and academic success when they feel seen, valued, heard, accepted, and part of a community.</Text>
+          <Text style={styles.bulletItem}>• EVIDENCE‑BASED TIER 1 INSTRUCTION AND RIGOR ARE FOUNDATIONAL FOR STUDENT‑CENTERED LEARNING: All learners deserve equitable access to high‑quality instruction in a supportive and challenging learning environment. Personalized learning practices support the pursuit of lifelong learning, progress toward mastery, and the development of a student's sense of self.</Text>
+        </View>
+      </Page>
+
+      {/* ============ PAGE 2 ============ */}
+      <Page size="A4" style={styles.page}>
+        <Header logoBase64={logoBase64} schoolName={schoolName} monthYear={monthYear} />
+
+        {/* CUSTOMIZED SCOPE OF SERVICES */}
+        <Text style={styles.sectionTitle}>CUSTOMIZED SCOPE OF SERVICES</Text>
+        <Text style={styles.bodyText}>{scopeParagraph}</Text>
+        <View style={styles.bulletList}>
+          {services.map((svc, idx) => (
+            <Text key={idx} style={styles.bulletItem}>• {svc.activity}</Text>
+          ))}
+        </View>
+        <Text style={styles.bodyText}>Gain access to LEAP Tools for Transformation:</Text>
+        <Text style={styles.bodyText}>LEAP Frameworks, Tools, Events and Content</Text>
+
+        <View style={styles.spacer} />
+
+        {/* Engagement Activity Table */}
+        <View style={styles.table}>
+          <View style={styles.tableHeaderRow}>
+            <Text style={{ ...styles.colActivity, ...styles.headerColText }}>Engagement Activity</Text>
+            <Text style={{ ...styles.colDescription, ...styles.headerColText }}>Description and Key Deliverables</Text>
+          </View>
+          {services.map((svc, idx) => (
+            <View key={idx} style={idx % 2 === 0 ? styles.tableRow : styles.tableRowAlt}>
+              <Text style={styles.colActivity}>{svc.activity}</Text>
+              <Text style={styles.colDescription}>{svc.deliverables}</Text>
+            </View>
+          ))}
+        </View>
+
+        {/* Testimonial Callout (yellow) */}
+        {proofPoint.statistic && (
+          <View style={styles.calloutBox}>
+            <Text style={styles.calloutStat}>LEAP Leadership Impact</Text>
+            <Text style={styles.calloutQuote}>“{proofPoint.statistic.quote}”</Text>
+            {proofPoint.quote && (
+              <Text style={[styles.calloutQuote, { marginTop: 4, fontWeight: 'bold' }]}>
+                – {proofPoint.quote.quote}
+              </Text>
+            )}
+          </View>
+        )}
+
+        {/* Disclaimer */}
+        <Text style={styles.disclaimer}>
+          This is an AI generated proposal that does not fully reflect the customization LEAP builds into programming with schools and districts. It is based on the most common starting point for similar districts/schools engaging in similar topics. Delivery and format were also intentionally omitted from this draft proposal so that you can connect with one of our team members to further discuss customization for your district/school.
+        </Text>
+      </Page>
+    </Document>
+  );
+};
+
+// ----------------------------------------------------------------------
+// GET API Handler
+// ----------------------------------------------------------------------
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const sessionId = searchParams.get("sessionId");
@@ -306,16 +363,69 @@ export async function GET(req: Request) {
     return new NextResponse("Missing sessionId parameter", { status: 400 });
   }
 
-  // Retrieve lead record from Supabase
+  // 1. Fetch lead data
   const { data: lead } = await supabaseAdmin
     .from("conversation_leads")
     .select("*")
     .eq("session_id", sessionId)
     .single();
 
-  // Render PDF to a Node Buffer
-  const pdfBuffer = await renderToBuffer(<ProposalDocument lead={lead || {}} />);
+  // --- 2. Register Open Sans font (if not already) ---
+  Font.register({
+    family: "Open Sans",
+    fonts: [
+      {
+        src: "https://fonts.gstatic.com/s/opensans/v40/memvYaGs126MiZpBA-UvWbX2vVnXBbObj2OVTS-mu0SC55I.woff2",
+        fontWeight: "normal",
+      },
+      {
+        src: "https://fonts.gstatic.com/s/opensans/v40/memvYaGs126MiZpBA-UvWbX2vVnXBbObj2OVTS-mu0SC55I.woff2",
+        fontWeight: "bold",
+      },
+    ],
+  });
 
+  // 3. Load logo, map, etc.
+
+  // 2. Load and convert logo to PNG base64 (async)
+  let logoBase64 = "";
+  try {
+    const logoPath = path.join(process.cwd(), "public", "LEAP_Logo.webp");
+    const imageBuffer = fs.readFileSync(logoPath);
+    const pngBuffer = await sharp(imageBuffer).png().toBuffer();
+    logoBase64 = `data:image/png;base64,${pngBuffer.toString("base64")}`;
+  } catch (error) {
+    console.error("Failed to load/convert logo:", error);
+  }
+
+  // 3. Load map image (PNG)
+  let mapBase64 = "";
+  try {
+    const mapPath = path.join(process.cwd(), "public", "photo_for_pdf.png");
+    const mapBuffer = fs.readFileSync(mapPath);
+    mapBase64 = `data:image/png;base64,${mapBuffer.toString("base64")}`;
+  } catch (error) {
+    console.error("Failed to load map image:", error);
+  }
+
+  // 4. Get dynamic data
+  const pillar = lead?.primary_topic || "General";
+  const customContext = lead?.custom_context || "learner-centered innovation";
+  const services = getServicesForPDF(pillar, customContext);
+  const proofPoint = getProofPoints(pillar);
+
+  // 5. Render PDF
+  const pdfBuffer = await renderToBuffer(
+    <ProposalDocument
+      lead={lead || {}}
+      logoBase64={logoBase64}
+      services={services}
+      proofPoint={proofPoint}
+      mapBase64={mapBase64}
+    />
+  );
+
+  // 6. Return PDF
   return new NextResponse(pdfBuffer as any, {
     headers: {
       "Content-Type": "application/pdf",
