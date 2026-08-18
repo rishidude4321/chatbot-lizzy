@@ -31,7 +31,6 @@ function formatTitleCase(str: string | null | undefined): string {
 // ----------------------------------------------------------------------
 // React PDF Styles
 // ----------------------------------------------------------------------
-
 const styles = StyleSheet.create({
   page: {
     padding: 30,
@@ -42,10 +41,10 @@ const styles = StyleSheet.create({
   // HEADER
   logoContainer: {
     alignItems: "center",
-    marginBottom: 4,
+    marginBottom: 16, // increased spacing under logo
   },
   logo: {
-    width: 240,
+    width: 240, // 2x original (was 120, now 240)
     height: "auto",
   },
   preparedForContainer: {
@@ -55,54 +54,66 @@ const styles = StyleSheet.create({
   preparedForText: {
     fontSize: 10,
     fontWeight: "normal",
-    color: "#000000",
+    color: "#000000", 
   },
   pipe: {
     color: "#00A3E0",
   },
+  sectionSubtitle: {
+    fontSize: 10,
+    color: "#F5B041", // yellow-orange
+    fontStyle: "italic",
+    marginLeft: 4,
+  },
+  sectionTitleRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    marginTop: 1,
+    marginBottom: 4,
+  },
   // SECTION TITLES – now in blue
   sectionTitle: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "bold",
     color: "#00A3E0",
-    marginTop: 12,
-    marginBottom: 6,
+    marginTop: 8,
+    marginBottom: 4,
   },
   bodyText: {
     fontSize: 10,
-    color: "#334155",
+    color: "#8E9092",
     lineHeight: 1.4,
     marginBottom: 4,
   },
+  // Bullet list container (no bullet points, we use custom image)
   bulletList: {
-    marginLeft: 12,
+    marginLeft: 0,
     marginBottom: 4,
   },
   bulletItem: {
     fontSize: 10,
-    color: "#334155",
+    color: "#8E9092",
     lineHeight: 1.4,
     marginBottom: 2,
+    flexShrink: 1, // allow text to wrap
   },
-  bulletDot: {
-    fontSize: 10,
-    color: "#00A3E0",
-    marginRight: 4,
-  },
-  // MAP container
+  // MAP container (no background)
   mapContainer: {
     flexDirection: "row",
+    flexWrap: "wrap",
     marginTop: 8,
     marginBottom: 8,
-    alignItems: "center", // vertically center if you want
+    alignItems: "flex-start",
   },
   mapImage: {
-    width: 200,
+    width: 200, // you said you set to 200
     height: "auto",
     marginLeft: 10,
+    flexShrink: 0,
   },
   mapTextContainer: {
     flex: 1,
+    paddingRight: 15,
   },
   // TABLE
   table: {
@@ -225,23 +236,38 @@ const ProposalDocument = ({
   services,
   proofPoint,
   mapBase64,
+  bulletBase64, // <-- NEW: custom bullet image
 }: {
   lead: Record<string, any>;
   logoBase64: string;
   services: Array<{ phase: string; activity: string; deliverables: string }>;
   proofPoint: { statistic: any; quote: any };
   mapBase64: string;
+  bulletBase64: string; // <-- NEW
 }) => {
   const schoolName = lead?.school_or_district_name || "Your School/District";
   const now = new Date();
   const monthYear = now.toLocaleString("en-US", { month: "long", year: "numeric" });
 
-  // Extract pillar and custom context
-  const pillar = lead?.primary_topic || "General";
-  const customContext = lead?.custom_context || "learner-centered innovation";
-
   // Generate "Customized Scope" paragraph
   const scopeParagraph = `This engagement is designed as a capacity-building and co‑design experience for ${schoolName}'s leadership and implementation teams. Across ${now.getFullYear()}, LEAP will:`;
+
+  // ------------------------------------------------------------------
+  // Helper: BulletPoint component using custom icon
+  // ------------------------------------------------------------------
+  const BulletPoint = ({ children }: { children: React.ReactNode }) => (
+    <View style={{ flexDirection: "row", marginBottom: 2, marginLeft: 12 }}>
+      {bulletBase64 ? (
+        <Image
+          src={bulletBase64}
+          style={{ width: 10, height: 10, marginRight: 6, marginTop: 2 }}
+        />
+      ) : (
+        <Text style={{ color: "#00A3E0", marginRight: 6, fontSize: 10 }}>•</Text>
+      )}
+      <Text style={styles.bulletItem}>{children}</Text>
+    </View>
+  );
 
   return (
     <Document>
@@ -255,14 +281,14 @@ const ProposalDocument = ({
           LEAP partners with district and school teams to solve high‑stakes teaching and learning challenges—like engagement, instructional coherence, and future‑ready skills. We connect research, innovation, and practice to redesign learning around students—then help individuals and teams implement what they design through high‑touch support. Our signature approach combines human‑centered design, cohort‑based professional learning, implementation coaching, and evidence tools that starts with local priorities and co‑design a structured pathway for each partner. Our work supports districts and schools in delivering personalized Next Gen learning models that are experienced by students and adults in coherent ways. When you engage with LEAP, you are engaged in entry points that help build clarity, confidence, and momentum that lasts beyond any single initiative. Since 2014, LEAP has:
         </Text>
 
-        {/* Map + Stats side by side */}
+        {/* Map + Stats side by side, map on right */}
         <View style={styles.mapContainer}>
           <View style={styles.mapTextContainer}>
             <View style={styles.bulletList}>
-              <Text style={styles.bulletItem}>• Worked with more than 140 schools across Chicagoland and 450 districts nationwide</Text>
-              <Text style={styles.bulletItem}>• Scaled the LEAP Frameworks and survey tools across 24 states</Text>
-              <Text style={styles.bulletItem}>• Vetted 200+ edtech companies that have applied to pilot with LEAP partner schools</Text>
-              <Text style={styles.bulletItem}>• Reached 100,000 students nationwide</Text>
+              <BulletPoint>Worked with more than 140 schools across Chicagoland and 450 districts nationwide</BulletPoint>
+              <BulletPoint>Scaled the LEAP Frameworks and survey tools across 24 states</BulletPoint>
+              <BulletPoint>Vetted 200+ edtech companies that have applied to pilot with LEAP partner schools</BulletPoint>
+              <BulletPoint>Reached 100,000 students nationwide</BulletPoint>
             </View>
           </View>
           {mapBase64 && (
@@ -273,14 +299,16 @@ const ProposalDocument = ({
         <View style={styles.spacer} />
 
         {/* THE LEAP APPROACH */}
-        <Text style={styles.sectionTitle}>THE LEAP APPROACH</Text>
-        <Text style={styles.bodyText}>Evidence‑based professional learning that:</Text>
+        <View style={styles.sectionTitleRow}>
+          <Text style={styles.sectionTitle}>THE LEAP APPROACH |</Text>
+          <Text style={styles.sectionSubtitle}>Evidence‑based professional learning that:</Text>
+        </View>
         <View style={styles.bulletList}>
-          <Text style={styles.bulletItem}>• Leverages adult expertise and voice</Text>
-          <Text style={styles.bulletItem}>• Works with your organizational tools, context, culture, structures, priorities, curriculum and standards</Text>
-          <Text style={styles.bulletItem}>• Balances learning and pedagogy with application</Text>
-          <Text style={styles.bulletItem}>• Rooted in research and evidence‑based practices from LEAP Frameworks</Text>
-          <Text style={styles.bulletItem}>• Leverages learning science and design thinking</Text>
+          <BulletPoint>Leverages adult expertise and voice</BulletPoint>
+          <BulletPoint>Works with your organizational tools, context, culture, structures, priorities, curriculum and standards</BulletPoint>
+          <BulletPoint>Balances learning and pedagogy with application</BulletPoint>
+          <BulletPoint>Rooted in research and evidence‑based practices from LEAP Frameworks</BulletPoint>
+          <BulletPoint>Leverages learning science and design thinking</BulletPoint>
         </View>
 
         <View style={styles.spacer} />
@@ -291,11 +319,11 @@ const ProposalDocument = ({
           At the heart of our approach is the belief that authentic educational transformation must be a continuous, cyclical journey centered entirely on the learner. We support partners in creating an ecosystem of growth—one that begins with assessing readiness and co‑designing a shared vision, then matures through the empowerment of change agents and the constant refinement of practice. We don't just implement change; we amplify and sustain it to ensure that every strategic shift is purposeful, collaborative, and, above all, driven by the needs of the students you serve. Every partnership looks different, because every community's goals, context, and starting point are different.
         </Text>
         <View style={styles.bulletList}>
-          <Text style={styles.bulletItem}>• EVERY LEARNER CAN SUCCEED WITH SUPPORT THAT'S CUSTOMIZED TO THE CHILD'S INTERESTS AND NEEDS: When they are engaged in a more personalized manner, students will often master content well above curriculum standards or developmental guidelines. We can and should reframe how educators set and raise expectations for our students.</Text>
-          <Text style={styles.bulletItem}>• EVERY LEARNER BRINGS STRENGTHS AND TALENTS TO THE CLASSROOM: The diverse knowledge bases, life experiences, languages and cultures of children are powerful assets for their learning‑as well as the learning of those around them‑and need to be leveraged as such.</Text>
-          <Text style={styles.bulletItem}>• LEARNER AGENCY IS ESSENTIAL: Our world of work increasingly requires more leadership, agility and self‑direction. At an early age, we must inspire our students to assume responsibility of their own learning, and help co‑design it.</Text>
-          <Text style={styles.bulletItem}>• A SENSE OF BELONGING IS CRITICAL TO LEARNING: Students are more engaged, motivated, and set for up social, emotional, and academic success when they feel seen, valued, heard, accepted, and part of a community.</Text>
-          <Text style={styles.bulletItem}>• EVIDENCE‑BASED TIER 1 INSTRUCTION AND RIGOR ARE FOUNDATIONAL FOR STUDENT‑CENTERED LEARNING: All learners deserve equitable access to high‑quality instruction in a supportive and challenging learning environment. Personalized learning practices support the pursuit of lifelong learning, progress toward mastery, and the development of a student's sense of self.</Text>
+          <BulletPoint><Text style={{ fontWeight: 'bold' }}>EVERY LEARNER CAN SUCCEED WITH SUPPORT THAT'S CUSTOMIZED TO THE CHILD'S INTERESTS AND NEEDS:</Text> When they are engaged in a more personalized manner, students will often master content well above curriculum standards or developmental guidelines. We can and should reframe how educators set and raise expectations for our students.</BulletPoint>
+          <BulletPoint><Text style={{ fontWeight: 'bold' }}>EVERY LEARNER BRINGS STRENGTHS AND TALENTS TO THE CLASSROOM:</Text> The diverse knowledge bases, life experiences, languages and cultures of children are powerful assets for their learning‑as well as the learning of those around them‑and need to be leveraged as such.</BulletPoint>
+          <BulletPoint><Text style={{ fontWeight: 'bold' }}>LEARNER AGENCY IS ESSENTIAL:</Text> Our world of work increasingly requires more leadership, agility and self‑direction. At an early age, we must inspire our students to assume responsibility of their own learning, and help co‑design it.</BulletPoint>
+          <BulletPoint><Text style={{ fontWeight: 'bold' }}>A SENSE OF BELONGING IS CRITICAL TO LEARNING:</Text> Students are more engaged, motivated, and set for up social, emotional, and academic success when they feel seen, valued, heard, accepted, and part of a community.</BulletPoint>
+          <BulletPoint><Text style={{ fontWeight: 'bold' }}>EVIDENCE‑BASED TIER 1 INSTRUCTION AND RIGOR ARE FOUNDATIONAL FOR STUDENT‑CENTERED LEARNING:</Text> All learners deserve equitable access to high‑quality instruction in a supportive and challenging learning environment. Personalized learning practices support the pursuit of lifelong learning, progress toward mastery, and the development of a student's sense of self.</BulletPoint>
         </View>
       </Page>
 
@@ -308,7 +336,7 @@ const ProposalDocument = ({
         <Text style={styles.bodyText}>{scopeParagraph}</Text>
         <View style={styles.bulletList}>
           {services.map((svc, idx) => (
-            <Text key={idx} style={styles.bulletItem}>• {svc.activity}</Text>
+            <BulletPoint key={idx}>{svc.activity}</BulletPoint>
           ))}
         </View>
         <Text style={styles.bodyText}>Gain access to LEAP Tools for Transformation:</Text>
@@ -370,24 +398,9 @@ export async function GET(req: Request) {
     .eq("session_id", sessionId)
     .single();
 
-  // --- 2. Register Open Sans font (if not already) ---
-  Font.register({
-    family: "Open Sans",
-    fonts: [
-      {
-        src: "https://fonts.gstatic.com/s/opensans/v40/memvYaGs126MiZpBA-UvWbX2vVnXBbObj2OVTS-mu0SC55I.woff2",
-        fontWeight: "normal",
-      },
-      {
-        src: "https://fonts.gstatic.com/s/opensans/v40/memvYaGs126MiZpBA-UvWbX2vVnXBbObj2OVTS-mu0SC55I.woff2",
-        fontWeight: "bold",
-      },
-    ],
-  });
+  // 2. Register Open Sans font (optional) – we use Helvetica, so skip.
 
-  // 3. Load logo, map, etc.
-
-  // 2. Load and convert logo to PNG base64 (async)
+  // 3. Load logo, map, and bullet images
   let logoBase64 = "";
   try {
     const logoPath = path.join(process.cwd(), "public", "LEAP_Logo.webp");
@@ -398,7 +411,6 @@ export async function GET(req: Request) {
     console.error("Failed to load/convert logo:", error);
   }
 
-  // 3. Load map image (PNG)
   let mapBase64 = "";
   try {
     const mapPath = path.join(process.cwd(), "public", "photo_for_pdf.png");
@@ -406,6 +418,15 @@ export async function GET(req: Request) {
     mapBase64 = `data:image/png;base64,${mapBuffer.toString("base64")}`;
   } catch (error) {
     console.error("Failed to load map image:", error);
+  }
+
+  let bulletBase64 = ""; // <-- NEW
+  try {
+    const bulletPath = path.join(process.cwd(), "public", "bullet_point.png");
+    const bulletBuffer = fs.readFileSync(bulletPath);
+    bulletBase64 = `data:image/png;base64,${bulletBuffer.toString("base64")}`;
+  } catch (error) {
+    console.error("Failed to load bullet image:", error);
   }
 
   // 4. Get dynamic data
@@ -422,6 +443,7 @@ export async function GET(req: Request) {
       services={services}
       proofPoint={proofPoint}
       mapBase64={mapBase64}
+      bulletBase64={bulletBase64} // <-- pass it
     />
   );
 
