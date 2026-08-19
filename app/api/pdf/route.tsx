@@ -14,7 +14,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { getServicesForPDF, getProofPoints } from "@/lib/rag";
 import path from "path";
 import fs from "fs";
-import sharp from "sharp";
+
 
 // ----------------------------------------------------------------------
 // Helper: Title Case
@@ -462,12 +462,11 @@ export async function GET(req: Request) {
   // 3. Load logo, map, and bullet images
   let logoBase64 = "";
   try {
-    const logoPath = path.join(process.cwd(), "public", "LEAP_Logo.webp");
+    const logoPath = path.join(process.cwd(), "public", "LEAP_Logo.png");
     const imageBuffer = fs.readFileSync(logoPath);
-    const pngBuffer = await sharp(imageBuffer).png().toBuffer();
-    logoBase64 = `data:image/png;base64,${pngBuffer.toString("base64")}`;
+    logoBase64 = `data:image/png;base64,${imageBuffer.toString("base64")}`;
   } catch (error) {
-    console.error("Failed to load/convert logo:", error);
+    console.error("Failed to load logo:", error);
   }
 
   let mapBase64 = "";
