@@ -69,6 +69,14 @@ const styles = StyleSheet.create({
   italicText: {
     fontStyle: "italic",
   },
+  verticalDivider: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: '30%',        // matches colActivity width
+    width: 1,
+    backgroundColor: '#000000',
+  },
   sectionSubtitle: {
     fontSize: 10,
     color: "#F5B041", // yellow-orange
@@ -131,39 +139,39 @@ const styles = StyleSheet.create({
   table: {
     width: "100%",
     borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: 4,
+    borderColor: "#000000",
     marginBottom: 8,
+    position: 'relative',
   },
   tableHeaderRow: {
     flexDirection: "row",
-    backgroundColor: "#0F1D32",
+    backgroundColor: "#00A3E0",
     padding: 6,
+    borderBottomWidth: 0,
+    borderBottomColor: "#000000",
   },
   tableRow: {
     flexDirection: "row",
     borderTopWidth: 1,
-    borderTopColor: "#E2E8F0",
+    borderTopColor: "#000000",
     padding: 6,
     backgroundColor: "#FFFFFF",
-  },
-  tableRowAlt: {
-    flexDirection: "row",
-    borderTopWidth: 1,
-    borderTopColor: "#E2E8F0",
-    padding: 6,
-    backgroundColor: "#F8FAFC",
   },
   colActivity: {
     width: "30%",
     fontSize: 9.5,
     fontWeight: "bold",
     color: "#0F1D32",
+    //borderRightWidth: 1,
+    //borderRightColor: "#000000",
+    paddingRight: 6, // spacing
+    hyphenation: false,
   },
   colDescription: {
     width: "70%",
     fontSize: 9.5,
     color: "#334155",
+    paddingLeft: 6,  // add this for spacing
   },
   headerColText: {
     fontSize: 9.5,
@@ -172,7 +180,7 @@ const styles = StyleSheet.create({
   },
   // CALLOUT BOX (testimonial) – yellow background
   calloutBox: {
-    marginTop: 8,
+    marginTop: 200,
     padding: 10,
     borderWidth: 1,
     borderColor: "#FFD700",
@@ -252,14 +260,16 @@ const ProposalDocument = ({
   services,
   proofPoint,
   mapBase64,
-  bulletBase64, // <-- NEW: custom bullet image
+  bulletBase64,
+  pillarSpecificBullet,   // <-- ADD THIS
 }: {
   lead: Record<string, any>;
   logoBase64: string;
   services: Array<{ phase: string; activity: string; deliverables: string }>;
   proofPoint: { statistic: any; quote: any };
   mapBase64: string;
-  bulletBase64: string; // <-- NEW
+  bulletBase64: string;
+  pillarSpecificBullet: string;   // <-- ADD THIS
 }) => {
   const schoolName = lead?.school_or_district_name || "Your School/District";
   const now = new Date();
@@ -267,6 +277,31 @@ const ProposalDocument = ({
 
   // Generate "Customized Scope" paragraph
   const scopeParagraph = `This engagement is designed as a capacity-building and co‑design experience for ${schoolName}'s leadership and implementation teams. Across ${now.getFullYear()}, LEAP will:`;
+  // Hardcoded bullets for "Customized Scope of Services"
+  const scopeBullets = [
+    `Model the LEAP Pilot Network experience & build co-designed professional learning for ${schoolName} leaders`,
+    pillarSpecificBullet,
+    `Support intentional edtech implementation`,
+    `Co-develop a ${schoolName} implementation playbook`,
+    `Gain access to LEAP Tools for Transformation:`,
+  ];
+
+  const DeliverableText = ({ text }: { text: string }) => {
+    const lines = text.split('\n').filter(line => line.trim() !== '');
+    return (
+      <View>
+        {lines.map((line, idx) => (
+          <View key={idx} style={{ flexDirection: 'row', marginBottom: 2 }}>
+            <Image
+              src={bulletBase64}
+              style={{ width: 10, height: 10, marginRight: 6, marginTop: 2, flexShrink: 0 }}
+            />
+            <Text style={[styles.bulletItem, { flex: 1, fontSize: 9 }]}>{line.trim()}</Text>
+          </View>
+        ))}
+      </View>
+    );
+  };
 
   // ------------------------------------------------------------------
   // Helper: BulletPoint component using custom icon
@@ -349,8 +384,8 @@ const ProposalDocument = ({
         <Text style={styles.sectionTitle}>CUSTOMIZED SCOPE OF SERVICES</Text>
         <Text style={styles.bodyText}>{scopeParagraph}</Text>
         <View style={styles.bulletList}>
-          {services.map((svc, idx) => (
-            <BulletPoint key={idx}>{svc.activity}</BulletPoint>
+          {scopeBullets.map((text, idx) => (
+            <BulletPoint key={idx}>{text}</BulletPoint>
           ))}
         </View>
         <Text style={styles.bodyText}>Gain access to LEAP Tools for Transformation:</Text>
@@ -360,14 +395,24 @@ const ProposalDocument = ({
 
         {/* Engagement Activity Table */}
         <View style={styles.table}>
+          {/* The continuous vertical line */}
+          <View style={styles.verticalDivider} />
+
+          {/* Header Row */}
           <View style={styles.tableHeaderRow}>
             <Text style={{ ...styles.colActivity, ...styles.headerColText }}>Engagement Activity</Text>
-            <Text style={{ ...styles.colDescription, ...styles.headerColText }}>Description and Key Deliverables</Text>
+            <View style={{ width: "70%", paddingLeft: 6 }}>
+              <Text style={{ ...styles.headerColText, fontSize: 9.5 }}>Description and Key Deliverables</Text>
+            </View>
           </View>
+
+          {/* Data Rows */}
           {services.map((svc, idx) => (
-            <View key={idx} style={idx % 2 === 0 ? styles.tableRow : styles.tableRowAlt}>
+            <View key={idx} style={styles.tableRow}>
               <Text style={styles.colActivity}>{svc.activity}</Text>
-              <Text style={styles.colDescription}>{svc.deliverables}</Text>
+              <View style={{ width: "70%", paddingLeft: 6 }}>
+                <DeliverableText text={svc.deliverables} />
+              </View>
             </View>
           ))}
         </View>
@@ -445,8 +490,25 @@ export async function GET(req: Request) {
 
   // 4. Get dynamic data
   const pillar = lead?.primary_topic || "General";
+
+  const getPillarSpecificBullet = (pillar: string) => {
+    switch (pillar) {
+      case "Human-Centered AI":
+        return "Build AI literacy and human‑centered design through EdTech planning, coaching, and facilitation";
+      case "Personalized Learning":
+        return "Build personalized learning capacity through EdTech planning, coaching, and facilitation";
+      case "Capacity Building":
+        return "Build leadership and instructional capacity through EdTech planning, coaching, and facilitation";
+      case "Engagement & Belonging":
+        return "Build engagement and belonging through EdTech planning, coaching, and facilitation";
+      default:
+        return "Build capacity through human‑centered design and EdTech planning, coaching, and facilitation";
+    }
+  };
+
+  const pillarSpecificBullet = getPillarSpecificBullet(pillar);
   const customContext = lead?.custom_context || "learner-centered innovation";
-  const services = getServicesForPDF(pillar, customContext);
+  const services = getServicesForPDF(pillar, customContext, lead?.school_or_district_name);
   const proofPoint = getProofPoints(pillar);
 
   // 5. Render PDF
@@ -458,6 +520,7 @@ export async function GET(req: Request) {
       proofPoint={proofPoint}
       mapBase64={mapBase64}
       bulletBase64={bulletBase64} // <-- pass it
+      pillarSpecificBullet={pillarSpecificBullet}   // <-- ADD THIS
     />
   );
 

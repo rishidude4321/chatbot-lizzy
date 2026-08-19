@@ -2,111 +2,111 @@
   "Human-Centered AI": [
     {
       "phase": "ASSESS",
-      "activity": "AI Guidebook Strategy Session",
-      "deliverables": "A baseline session to align your community and define ethical AI use cases specifically for {custom_context}."
+      "activity": "Opportunity of Practice",
+      "deliverables": "A baseline discovery session to identify and define the specific opportunity area of for {$schoolName}."
     },
     {
       "phase": "ACCELERATE",
-      "activity": "AI Leader Fellowship",
-      "deliverables": "Strategic training and cohort-based learning for your admin team to safely navigate {custom_context}."
+      "activity": "Design Thinking",
+      "deliverables": "Strategic session for your teams to safely navigate {custom_context}."
     },
     {
       "phase": "ACCELERATE",
-      "activity": "Getting Hands-on with Generative AI",
-      "deliverables": "Practical, job-embedded professional development for educators to leverage AI tools to support {custom_context}."
+      "activity": "Prototype",
+      "deliverables": "Practical, hands-on implementation to leverage LEAP Innovation Frameworks and AI-aligned tools."
     },
     {
       "phase": "AMPLIFY",
-      "activity": "Student AI Literacy Design Sprint",
-      "deliverables": "A culminating sprint to build sustainable student frameworks and digital citizenship models around {custom_context}."
+      "activity": "Development & Showcase",
+      "deliverables": "A culminating experience to demonstrate achievements over LEAP involvement."
     }
   ],
   "Personalized Learning": [
     {
       "phase": "ASSESS",
-      "activity": "LEAP Learner Engagement Survey & Observation Visit",
-      "deliverables": "Identify baseline needs, systemic gaps, and current classroom realities regarding {custom_context}."
+      "activity": "Opportunity of Practice",
+      "deliverables": "A baseline discovery session to identify and define the specific opportunity area of for {schoolName}."
     },
     {
       "phase": "ACCELERATE",
-      "activity": "Hallmarks of Personalized Learning",
-      "deliverables": "Professional development focused on transitioning classrooms toward student-ownership regarding {custom_context}."
+      "activity": "Design Thinking",
+      "deliverables": "Strategic session for your teams to safely navigate {custom_context}."
     },
     {
       "phase": "ACCELERATE",
-      "activity": "Instructional Delivery Models",
-      "deliverables": "Targeted coaching for educators to redesign lesson delivery to maximize student ownership and address {custom_context}."
+      "activity": "Prototype",
+      "deliverables": "Practical, hands-on implementation to leverage LEAP Innovation Frameworks and AI-aligned tools."
     },
     {
       "phase": "AMPLIFY",
-      "activity": "Progress Monitoring Meeting & Leadership Academy",
-      "deliverables": "Synthesize pilot data to scale personalized practices and ensure {custom_context} is supported district-wide."
+      "activity": "Development & Showcase",
+      "deliverables": "A culminating experience to demonstrate achievements over LEAP involvement."
     }
   ],
   "Capacity Building": [
     {
       "phase": "ASSESS",
-      "activity": "Strategic Planning & Portrait of a Graduate",
-      "deliverables": "Align leadership vision and define long-term success metrics tailored to {custom_context}."
+      "activity": "Opportunity of Practice",
+      "deliverables": "A baseline discovery session to identify and define the specific opportunity area of for {schoolName}."
     },
     {
       "phase": "ACCELERATE",
-      "activity": "Leading Change Workshop",
-      "deliverables": "Equip leaders with the operational frameworks required to navigate structural shifts for {custom_context}."
+      "activity": "Design Thinking",
+      "deliverables": "Strategic session for your teams to safely navigate {custom_context}."
     },
     {
       "phase": "ACCELERATE",
-      "activity": "Coaching Workshops",
-      "deliverables": "Develop internal instructional leaders capable of sustaining and modeling {custom_context}."
+      "activity": "Prototype",
+      "deliverables": "Practical, hands-on implementation to leverage LEAP Innovation Frameworks and AI-aligned tools."
     },
     {
       "phase": "AMPLIFY",
-      "activity": "Convergence & Exec Dev Planning",
-      "deliverables": "Long-term sustainability planning to embed {custom_context} deeply into district policy and culture."
+      "activity": "Development & Showcase",
+      "deliverables": "A culminating experience to demonstrate achievements over LEAP involvement."
     }
   ],
   "Engagement & Belonging": [
     {
       "phase": "ASSESS",
-      "activity": "LEAP Learner-First School Observation Visit",
-      "deliverables": "Audit current school culture, student voice, and belonging metrics related to {custom_context}."
+      "activity": "Opportunity of Practice",
+      "deliverables": "A baseline discovery session to identify and define the specific opportunity area of for {schoolName}."
     },
     {
       "phase": "ACCELERATE",
-      "activity": "Student Engagement vs. Student Compliance",
-      "deliverables": "Professional learning to shift teacher mindsets and daily practices surrounding {custom_context}."
+      "activity": "Design Thinking",
+      "deliverables": "Strategic session for your teams to safely navigate {custom_context}."
     },
     {
       "phase": "ACCELERATE",
-      "activity": "Learner Advisory Focus Groups",
-      "deliverables": "Direct student engagement to co-design culturally responsive solutions for {custom_context}."
+      "activity": "Prototype",
+      "deliverables": "Practical, hands-on implementation to leverage LEAP Innovation Frameworks and AI-aligned tools."
     },
     {
       "phase": "AMPLIFY",
-      "activity": "Modern High School Design Synthesis",
-      "deliverables": "Redesigning systemic structures to permanently support and scale {custom_context}."
+      "activity": "Development & Showcase",
+      "deliverables": "A culminating experience to demonstrate achievements over LEAP involvement."
     }
   ],
   "General": [
     {
       "phase": "ASSESS",
-      "activity": "LEAP Diagnostic & Empathy Interviews",
-      "deliverables": "Baseline your current student-centered ecosystem and gather qualitative data regarding {custom_context}."
+      "activity": "Opportunity of Practice",
+      "deliverables": "A baseline discovery session to identify and define the specific opportunity area of for {schoolName}."
     },
     {
       "phase": "ACCELERATE",
-      "activity": "General Consulting & Virtual Check-ins",
-      "deliverables": "Targeted, ongoing operational support addressing your goals for {custom_context}."
+      "activity": "Design Thinking",
+      "deliverables": "Strategic session for your teams to safely navigate {custom_context}."
     },
     {
       "phase": "ACCELERATE",
-      "activity": "Teacher & Leadership Academy",
-      "deliverables": "Capacity building to implement high-leverage instructional strategies for {custom_context}."
+      "activity": "Prototype",
+      "deliverables": "Practical, hands-on implementation to leverage LEAP Innovation Frameworks and AI-aligned tools."
     },
     {
       "phase": "AMPLIFY",
-      "activity": "Leadership Synthesis",
-      "deliverables": "Conclude with a strategic session to ensure adult systems are built to sustain impact for {custom_context}."
+      "activity": "Development & Showcase",
+      "deliverables": "A culminating experience to demonstrate achievements over LEAP involvement."
     }
   ]
 }

@@ -76,7 +76,7 @@ export function getMatchingCaseStudy(userTopic: string): CaseStudy {
 // ==========================================
 
 // 1. Fetch exactly 4 services based on the pillar and inject the context safely
-export function getServicesForPDF(pillar: string | null, customContext: string | null) {
+export function getServicesForPDF(pillar: string | null, customContext: string | null, schoolName: string | null) {
   // Use the requested pillar, but fallback to "General" if it's missing or misspelled
 // Tell TypeScript to treat the JSON as a dictionary safely
   const servicesDict: Record<string, any> = servicesData;
@@ -88,11 +88,14 @@ export function getServicesForPDF(pillar: string | null, customContext: string |
   
   // Safe fallback if the user gave us gibberish or null for context
   const safeContext = customContext || "learner-centered innovation";
+  const safeSchool = schoolName || "Your School/District";
 
   // Map over the 4 items and replace the placeholder string dynamically
   return rawServices.map((service: any) => ({
     ...service,
-    deliverables: service.deliverables.replace("{custom_context}", safeContext)
+    deliverables: service.deliverables
+      .replace("{custom_context}", safeContext)
+      .replace("{schoolName}", safeSchool)
   }));
 }
 
