@@ -492,18 +492,26 @@ export async function GET(req: Request) {
   const pillar = lead?.primary_topic || "General";
 
   const getPillarSpecificBullet = (pillar: string) => {
-    switch (pillar) {
-      case "Human-Centered AI":
-        return "Build AI literacy and human‑centered design through EdTech planning, coaching, and facilitation";
-      case "Personalized Learning":
-        return "Build personalized learning capacity through EdTech planning, coaching, and facilitation";
-      case "Capacity Building":
-        return "Build leadership and instructional capacity through EdTech planning, coaching, and facilitation";
-      case "Engagement & Belonging":
-        return "Build engagement and belonging through EdTech planning, coaching, and facilitation";
-      default:
-        return "Build capacity through human‑centered design and EdTech planning, coaching, and facilitation";
+    const normalizedPillar = pillar?.toLowerCase() || "";
+    
+    if (normalizedPillar.includes("human-centered") || normalizedPillar.includes("human centered") || normalizedPillar.includes("ai")) {
+      return "Build AI literacy and human‑centered design through EdTech planning, coaching, and facilitation";
     }
+    
+    if (normalizedPillar.includes("personalized") || normalizedPillar.includes("personalised")) {
+      return "Build personalized learning capacity through EdTech planning, coaching, and facilitation";
+    }
+    
+    if (normalizedPillar.includes("capacity") || normalizedPillar.includes("capacity building")) {
+      return "Build leadership and instructional capacity through EdTech planning, coaching, and facilitation";
+    }
+    
+    if (normalizedPillar.includes("engagement") || normalizedPillar.includes("belonging")) {
+      return "Build engagement and belonging through EdTech planning, coaching, and facilitation";
+    }
+    
+    // Default
+    return "Build capacity through human‑centered design and EdTech planning, coaching, and facilitation";
   };
 
   const pillarSpecificBullet = getPillarSpecificBullet(pillar);

@@ -40,9 +40,18 @@ export function getMatchingCaseStudy(userTopic: string): CaseStudy {
   // 2. Keyword Matcher
   if (
     lowerTopic.includes("math") ||
-    lowerTopic.includes("middle") ||
     lowerTopic.includes("algebra") ||
-    lowerTopic.includes("stem")
+    lowerTopic.includes("stem") ||
+    lowerTopic.includes("steam") ||
+    lowerTopic.includes("science") ||
+    lowerTopic.includes("technology") ||
+    lowerTopic.includes("middle school") ||
+    lowerTopic.includes("urban") ||
+    lowerTopic.includes("personalized") ||
+    lowerTopic.includes("student-centered") ||
+    lowerTopic.includes("learner-centered") ||
+    lowerTopic.includes("differentiated") ||
+    lowerTopic.includes("differentiation")
   ) {
     return caseStudies[0]; // Urban Math Acceleration
   }
@@ -50,19 +59,37 @@ export function getMatchingCaseStudy(userTopic: string): CaseStudy {
   if (
     lowerTopic.includes("mll") ||
     lowerTopic.includes("multilingual") ||
+    lowerTopic.includes("ell") ||
+    lowerTopic.includes("esl") ||
     lowerTopic.includes("language") ||
     lowerTopic.includes("special ed") ||
-    lowerTopic.includes("suburban")
+    lowerTopic.includes("special education") ||
+    lowerTopic.includes("suburban") ||
+    lowerTopic.includes("english learner") ||
+    lowerTopic.includes("bilingual") ||
+    lowerTopic.includes("ela") ||
+    lowerTopic.includes("literacy") ||
+    lowerTopic.includes("reading") ||
+    lowerTopic.includes("writing") ||
+    lowerTopic.includes("inclusion")
   ) {
     return caseStudies[1]; // Suburban MLL Initiative
   }
 
   if (
     lowerTopic.includes("competency") ||
-    lowerTopic.includes("rural") ||
-    lowerTopic.includes("grading") ||
+    lowerTopic.includes("competency-based") ||
     lowerTopic.includes("mastery") ||
-    lowerTopic.includes("consortium")
+    lowerTopic.includes("grading") ||
+    lowerTopic.includes("assessment") ||
+    lowerTopic.includes("rural") ||
+    lowerTopic.includes("consortium") ||
+    lowerTopic.includes("proficiency") ||
+    lowerTopic.includes("standards-based") ||
+    lowerTopic.includes("graduate") ||
+    lowerTopic.includes("graduation") ||
+    lowerTopic.includes("credit") ||
+    lowerTopic.includes("pacing")
   ) {
     return caseStudies[2]; // Rural Competency Expansion
   }
