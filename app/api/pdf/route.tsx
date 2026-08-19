@@ -35,6 +35,7 @@ const styles = StyleSheet.create({
   page: {
     padding: 30,
     paddingTop: 10,
+    paddingBottom: 0, // add explicit bottom padding
     fontFamily: "Helvetica",
     backgroundColor: "#FFFFFF",
   },
@@ -55,9 +56,18 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: "normal",
     color: "#000000", 
+    hyphenation: false,
   },
   pipe: {
     color: "#00A3E0",
+  },
+  numberHighlight: {
+    fontWeight: "bold",
+    fontSize: 12, // slightly bigger than body text (10)
+    color: "#00A3E0", // LEAP blue
+  },
+  italicText: {
+    fontStyle: "italic",
   },
   sectionSubtitle: {
     fontSize: 10,
@@ -84,11 +94,12 @@ const styles = StyleSheet.create({
     color: "#8E9092",
     lineHeight: 1.4,
     marginBottom: 4,
+    hyphenation: false,
   },
   // Bullet list container (no bullet points, we use custom image)
   bulletList: {
     marginLeft: 0,
-    marginBottom: 4,
+    marginBottom: 0,
   },
   bulletItem: {
     fontSize: 10,
@@ -96,13 +107,14 @@ const styles = StyleSheet.create({
     lineHeight: 1.4,
     marginBottom: 2,
     flexShrink: 1, // allow text to wrap
+    hyphenation: false,
   },
   // MAP container (no background)
   mapContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
     marginTop: 8,
-    marginBottom: 8,
+    marginBottom: 0,
     alignItems: "flex-start",
   },
   mapImage: {
@@ -178,6 +190,10 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     marginTop: 2,
   },
+  principleLabel: {
+    fontWeight: "bold",
+    color: "#00A3E0", // LEAP blue
+  },
   // DISCLAIMER – grey
   disclaimer: {
     fontSize: 8,
@@ -189,7 +205,7 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   spacer: {
-    height: 6,
+    height: 2,
   },
 });
 
@@ -256,16 +272,16 @@ const ProposalDocument = ({
   // Helper: BulletPoint component using custom icon
   // ------------------------------------------------------------------
   const BulletPoint = ({ children }: { children: React.ReactNode }) => (
-    <View style={{ flexDirection: "row", marginBottom: 2, marginLeft: 12 }}>
+    <View style={{ flexDirection: "row", marginBottom: 1, marginLeft: 12 }}>
       {bulletBase64 ? (
         <Image
           src={bulletBase64}
-          style={{ width: 10, height: 10, marginRight: 6, marginTop: 2 }}
+          style={{ width: 10, height: 10, marginRight: 6, marginTop: 2, flexShrink: 0 }}
         />
       ) : (
-        <Text style={{ color: "#00A3E0", marginRight: 6, fontSize: 10 }}>•</Text>
+        <Text style={{ color: "#00A3E0", marginRight: 6, fontSize: 10, flexShrink: 0 }}>•</Text>
       )}
-      <Text style={styles.bulletItem}>{children}</Text>
+      <Text style={[styles.bulletItem, { flex: 1 }]}>{children}</Text>
     </View>
   );
 
@@ -285,10 +301,10 @@ const ProposalDocument = ({
         <View style={styles.mapContainer}>
           <View style={styles.mapTextContainer}>
             <View style={styles.bulletList}>
-              <BulletPoint>Worked with more than 140 schools across Chicagoland and 450 districts nationwide</BulletPoint>
-              <BulletPoint>Scaled the LEAP Frameworks and survey tools across 24 states</BulletPoint>
-              <BulletPoint>Vetted 200+ edtech companies that have applied to pilot with LEAP partner schools</BulletPoint>
-              <BulletPoint>Reached 100,000 students nationwide</BulletPoint>
+              <BulletPoint>Worked with more than 140 schools across Chicagoland and <Text style={styles.numberHighlight}>450</Text> districts nationwide</BulletPoint>
+              <BulletPoint>Scaled the LEAP Frameworks and survey tools across <Text style={styles.numberHighlight}>24</Text> states</BulletPoint>
+              <BulletPoint>Vetted <Text style={styles.numberHighlight}>200+</Text> edtech companies that have applied to pilot with LEAP partner schools</BulletPoint>
+              <BulletPoint>Reached <Text style={styles.numberHighlight}>100,000</Text> students nationwide</BulletPoint>
             </View>
           </View>
           {mapBase64 && (
@@ -296,19 +312,17 @@ const ProposalDocument = ({
           )}
         </View>
 
-        <View style={styles.spacer} />
-
         {/* THE LEAP APPROACH */}
         <View style={styles.sectionTitleRow}>
           <Text style={styles.sectionTitle}>THE LEAP APPROACH |</Text>
           <Text style={styles.sectionSubtitle}>Evidence‑based professional learning that:</Text>
         </View>
         <View style={styles.bulletList}>
-          <BulletPoint>Leverages adult expertise and voice</BulletPoint>
+          <BulletPoint>Leverages <Text style={styles.italicText}>adult expertise</Text> and voice</BulletPoint>
           <BulletPoint>Works with your organizational tools, context, culture, structures, priorities, curriculum and standards</BulletPoint>
-          <BulletPoint>Balances learning and pedagogy with application</BulletPoint>
-          <BulletPoint>Rooted in research and evidence‑based practices from LEAP Frameworks</BulletPoint>
-          <BulletPoint>Leverages learning science and design thinking</BulletPoint>
+          <BulletPoint>Balances <Text style={styles.italicText}>learning and pedagogy with application</Text></BulletPoint>
+          <BulletPoint>Rooted in <Text style={styles.italicText}>research and evidence-base practices</Text> from LEAP Frameworks</BulletPoint>
+          <BulletPoint>Leverages learning science and <Text style={styles.italicText}>design thinking</Text></BulletPoint>
         </View>
 
         <View style={styles.spacer} />
@@ -319,11 +333,11 @@ const ProposalDocument = ({
           At the heart of our approach is the belief that authentic educational transformation must be a continuous, cyclical journey centered entirely on the learner. We support partners in creating an ecosystem of growth—one that begins with assessing readiness and co‑designing a shared vision, then matures through the empowerment of change agents and the constant refinement of practice. We don't just implement change; we amplify and sustain it to ensure that every strategic shift is purposeful, collaborative, and, above all, driven by the needs of the students you serve. Every partnership looks different, because every community's goals, context, and starting point are different.
         </Text>
         <View style={styles.bulletList}>
-          <BulletPoint><Text style={{ fontWeight: 'bold' }}>EVERY LEARNER CAN SUCCEED WITH SUPPORT THAT'S CUSTOMIZED TO THE CHILD'S INTERESTS AND NEEDS:</Text> When they are engaged in a more personalized manner, students will often master content well above curriculum standards or developmental guidelines. We can and should reframe how educators set and raise expectations for our students.</BulletPoint>
-          <BulletPoint><Text style={{ fontWeight: 'bold' }}>EVERY LEARNER BRINGS STRENGTHS AND TALENTS TO THE CLASSROOM:</Text> The diverse knowledge bases, life experiences, languages and cultures of children are powerful assets for their learning‑as well as the learning of those around them‑and need to be leveraged as such.</BulletPoint>
-          <BulletPoint><Text style={{ fontWeight: 'bold' }}>LEARNER AGENCY IS ESSENTIAL:</Text> Our world of work increasingly requires more leadership, agility and self‑direction. At an early age, we must inspire our students to assume responsibility of their own learning, and help co‑design it.</BulletPoint>
-          <BulletPoint><Text style={{ fontWeight: 'bold' }}>A SENSE OF BELONGING IS CRITICAL TO LEARNING:</Text> Students are more engaged, motivated, and set for up social, emotional, and academic success when they feel seen, valued, heard, accepted, and part of a community.</BulletPoint>
-          <BulletPoint><Text style={{ fontWeight: 'bold' }}>EVIDENCE‑BASED TIER 1 INSTRUCTION AND RIGOR ARE FOUNDATIONAL FOR STUDENT‑CENTERED LEARNING:</Text> All learners deserve equitable access to high‑quality instruction in a supportive and challenging learning environment. Personalized learning practices support the pursuit of lifelong learning, progress toward mastery, and the development of a student's sense of self.</BulletPoint>
+          <BulletPoint><Text style={styles.principleLabel}>EVERY LEARNER CAN SUCCEED WITH SUPPORT THAT'S CUSTOMIZED TO THE CHILD'S INTERESTS AND NEEDS:</Text><Text style={styles.italicText}>When they are engaged in a more personalized manner, students will often master content well above curriculum standards or developmental guidelines. We can and should reframe how educators set and raise expectations for our students.</Text></BulletPoint>
+          <BulletPoint><Text style={styles.principleLabel}>EVERY LEARNER BRINGS STRENGTHS AND TALENTS TO THE CLASSROOM:</Text><Text style={styles.italicText}> The diverse knowledge bases, life experiences, languages and cultures of children are powerful assets for their learning‑as well as the learning of those around them‑and need to be leveraged as such.</Text></BulletPoint>
+          <BulletPoint><Text style={styles.principleLabel}>LEARNER AGENCY IS ESSENTIAL:</Text><Text style={styles.italicText}> Our world of work increasingly requires more leadership, agility and self‑direction. At an early age, we must inspire our students to assume responsibility of their own learning, and help co‑design.</Text></BulletPoint>
+          <BulletPoint><Text style={styles.principleLabel}>A SENSE OF BELONGING IS CRITICAL TO LEARNING:</Text><Text style={styles.italicText}> Students are more engaged, motivated, and set for up social, emotional, and academic success when they feel seen, valued, heard, accepted, and part of a community.</Text></BulletPoint>
+          <BulletPoint><Text style={styles.principleLabel}>EVIDENCE‑BASED TIER 1 INSTRUCTION AND RIGOR ARE FOUNDATIONAL FOR STUDENT‑CENTERED LEARNING:</Text><Text style={styles.italicText}> All learners deserve equitable access to high‑quality instruction in a supportive and challenging learning environment. Personalized learning practices support the pursuit of lifelong learning, progress toward mastery, and the development of a student's sense of self.</Text></BulletPoint>
         </View>
       </Page>
 
@@ -340,7 +354,7 @@ const ProposalDocument = ({
           ))}
         </View>
         <Text style={styles.bodyText}>Gain access to LEAP Tools for Transformation:</Text>
-        <Text style={styles.bodyText}>LEAP Frameworks, Tools, Events and Content</Text>
+        <BulletPoint>LEAP Frameworks, Tools, Events and Content</BulletPoint>
 
         <View style={styles.spacer} />
 
